@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DataProvider } from "./context/DataContext";
+import { DataProvider, API } from "./context/DataContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import ExecSummary from "./pages/ExecSummary";
 import UsageTrends from "./pages/UsageTrends";
@@ -36,7 +36,7 @@ function AppInner() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/clients")
+    fetch(`${API}/clients`)
       .then(r => r.json())
       .then(data => {
         if (data.clients && data.clients.length > 0) {

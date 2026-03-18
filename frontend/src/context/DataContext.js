@@ -2,7 +2,8 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { SkeletonDashboard } from "../components/Skeleton";
 import styles from "./DataContext.module.css";
 
-const API = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
+export const API = process.env.REACT_APP_API_URL || 
+  (window.location.hostname === "localhost" ? "http://localhost:8000/api" : "/api");
 const DataContext = createContext(null);
 export const useData = () => useContext(DataContext);
 

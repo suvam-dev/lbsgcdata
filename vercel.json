@@ -1,0 +1,22 @@
+{
+  "buildCommand": "cd frontend && npm install && CI=false npm run build",
+  "outputDirectory": "frontend/build",
+  "framework": "create-react-app",
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "data_analytics_engine/**",
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
