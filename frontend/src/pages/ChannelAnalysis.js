@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useData } from "../context/DataContext";
+import { useTheme } from "../context/ThemeContext";
 import KpiCard from "../components/KpiCard";
 import SectionTitle from "../components/SectionTitle";
 import CustomTooltip from "../components/CustomTooltip";
-import { CHART } from "../utils/constants";
+import { CHART, CHART_LIGHT, CHART_DARK } from "../utils/constants";
 import styles from "./ChannelAnalysis.module.css";
 
 export default function ChannelAnalysis() {
+  const { isDark } = useTheme();
+  const chartMeta = isDark ? CHART_DARK : CHART_LIGHT;
   const { channels, platformsByChannel } = useData();
   const [sortBy, setSortBy] = useState("created");
 
@@ -47,9 +50,9 @@ export default function ChannelAnalysis() {
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={channelsSorted.slice(0, 10)} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART.gridLine} />
-              <XAxis dataKey="channel" tick={{ fontSize: 10, fill: CHART.axisText }} angle={-30} textAnchor="end" height={44} interval={0} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: CHART.axisText }} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartMeta.gridLine} />
+              <XAxis dataKey="channel" tick={{ fontSize: 10, fill: chartMeta.axisText }} angle={-30} textAnchor="end" height={44} interval={0} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: chartMeta.axisText }} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="uploaded" name="Uploaded" fill={CHART.uploaded} opacity={0.7} radius={[2,2,0,0]} />
               <Bar dataKey="created" name="Created" fill={CHART.created} opacity={0.7} radius={[2,2,0,0]} />

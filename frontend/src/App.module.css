@@ -5,8 +5,8 @@
 
 
 .header {
-  background: rgba(6, 6, 14, 0.85);
-  border-bottom: 1px solid var(--glass-border);
+  background: var(--color-navbar-bg);
+  border-bottom: 1px solid var(--color-navbar-border);
   padding: 0 var(--content-padding);
   position: sticky;
   top: 0;
@@ -166,6 +166,25 @@
 .menuToggle:hover {
   background: var(--glass-bg-hover);
   color: var(--color-text-primary);
+}
+
+.themeToggle {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  line-height: 1;
+}
+
+.themeToggle:hover {
+  background: var(--glass-bg-hover);
+  color: var(--color-text-primary);
+  border-color: rgba(var(--theme-primary-rgb), 0.4);
+  box-shadow: 0 0 12px rgba(var(--theme-primary-rgb), 0.15);
 }
 
 

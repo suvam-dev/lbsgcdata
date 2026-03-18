@@ -1,13 +1,16 @@
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, Legend, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useData } from "../context/DataContext";
+import { useTheme } from "../context/ThemeContext";
 import KpiCard from "../components/KpiCard";
 import SectionTitle from "../components/SectionTitle";
 import CustomTooltip from "../components/CustomTooltip";
 import { fmt } from "../utils/formatters";
-import { COLORS, CHART } from "../utils/constants";
+import { COLORS, CHART, CHART_LIGHT, CHART_DARK } from "../utils/constants";
 import styles from "./ExecSummary.module.css";
 
 export default function ExecSummary() {
+  const { isDark } = useTheme();
+  const chartMeta = isDark ? CHART_DARK : CHART_LIGHT;
   const { summary, monthly, channels, outputTypes, inputTypes, language } = useData();
   const totalUploaded = summary.total_uploaded;
   const totalCreated = summary.total_created;
@@ -39,9 +42,9 @@ export default function ExecSummary() {
           <SectionTitle sub="Monthly video counts">Funnel: Upload → Create → Publish</SectionTitle>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={monthly} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART.gridLine} />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: CHART.axisText }} interval="preserveStartEnd" tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: CHART.axisText }} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartMeta.gridLine} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: chartMeta.axisText }} interval="preserveStartEnd" tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: chartMeta.axisText }} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="created" name="Created" stroke={CHART.created} fill="rgba(0,212,255,0.08)" strokeWidth={2} />
               <Area type="monotone" dataKey="uploaded" name="Uploaded" stroke={CHART.uploaded} fill="rgba(139,92,246,0.08)" strokeWidth={2} />
@@ -54,9 +57,9 @@ export default function ExecSummary() {
           <SectionTitle sub="Top 6 channels by created volume">Channel Performance Overview</SectionTitle>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={channels.slice(0, 6)} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART.gridLine} />
-              <XAxis dataKey="channel" tick={{ fontSize: 10, fill: CHART.axisText }} angle={-30} textAnchor="end" height={40} interval={0} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: CHART.axisText }} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartMeta.gridLine} />
+              <XAxis dataKey="channel" tick={{ fontSize: 10, fill: chartMeta.axisText }} angle={-30} textAnchor="end" height={40} interval={0} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: chartMeta.axisText }} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="created" name="Created" fill={CHART.created} opacity={0.8} radius={[3, 3, 0, 0]} />
               <Bar dataKey="published" name="Published" fill={CHART.published} radius={[3, 3, 0, 0]} />

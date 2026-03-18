@@ -11,7 +11,11 @@ app = FastAPI(
 # Allow requests from the React dashboard (localhost:3000/3001) and any future frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://frontend-rosy-eight-27.vercel.app",
+    ],
     allow_credentials=False,
     allow_methods=["GET"],
     allow_headers=["*"],

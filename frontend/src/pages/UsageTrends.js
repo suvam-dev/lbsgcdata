@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useData } from "../context/DataContext";
+import { useTheme } from "../context/ThemeContext";
 import KpiCard from "../components/KpiCard";
 import SectionTitle from "../components/SectionTitle";
 import CustomTooltip from "../components/CustomTooltip";
-import { CHART, COLORS } from "../utils/constants";
+import { CHART, COLORS, CHART_LIGHT, CHART_DARK } from "../utils/constants";
 import styles from "./UsageTrends.module.css";
 
 export default function UsageTrends() {
+  const { isDark } = useTheme();
+  const chartMeta = isDark ? CHART_DARK : CHART_LIGHT;
   const { monthly, summary } = useData();
   const [metric, setMetric] = useState("count");
 
@@ -44,9 +47,9 @@ export default function UsageTrends() {
         <SectionTitle sub="Mar 2025 – Feb 2026">Monthly Volume Trends</SectionTitle>
         <ResponsiveContainer width="100%" height={280}>
           <AreaChart data={chartData} margin={{ top: 0, right: 20, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={CHART.gridLine} />
-            <XAxis dataKey="month" tick={{ fontSize: 10, fill: CHART.axisText }} interval="preserveStartEnd" tickLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: CHART.axisText }} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={chartMeta.gridLine} />
+            <XAxis dataKey="month" tick={{ fontSize: 10, fill: chartMeta.axisText }} interval="preserveStartEnd" tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: chartMeta.axisText }} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Legend wrapperStyle={{ fontSize: 12, color: CHART.axisText }} />
             <Area type="monotone" dataKey="Created" stroke={CHART.created} fill="rgba(0,212,255,0.07)" strokeWidth={2.5} />
@@ -61,9 +64,9 @@ export default function UsageTrends() {
           <SectionTitle sub="Monthly publish conversion %">Publish Rate Over Time</SectionTitle>
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={monthly.map(d => ({ month: d.month, rate: +(d.published / (d.created || 1) * 100).toFixed(2) }))} margin={{ left: -20, right: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART.gridLine} />
-              <XAxis dataKey="month" tick={{ fontSize: 9, fill: CHART.axisText }} interval="preserveStartEnd" tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: CHART.axisText }} unit="%" tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartMeta.gridLine} />
+              <XAxis dataKey="month" tick={{ fontSize: 9, fill: chartMeta.axisText }} interval="preserveStartEnd" tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: chartMeta.axisText }} unit="%" tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Line type="monotone" dataKey="rate" name="Publish Rate %" stroke={CHART.warn} strokeWidth={2} dot={{ r: 3, fill: CHART.warn }} />
             </LineChart>
@@ -74,9 +77,9 @@ export default function UsageTrends() {
           <SectionTitle sub="Created ÷ Uploaded per month">Output Multiplier (AI Amplification)</SectionTitle>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={monthly.map(d => ({ month: d.month, mult: +(d.created / (d.uploaded || 1)).toFixed(2) }))} margin={{ left: -20, right: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART.gridLine} />
-              <XAxis dataKey="month" tick={{ fontSize: 9, fill: CHART.axisText }} interval="preserveStartEnd" tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: CHART.axisText }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartMeta.gridLine} />
+              <XAxis dataKey="month" tick={{ fontSize: 9, fill: chartMeta.axisText }} interval="preserveStartEnd" tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: chartMeta.axisText }} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="mult" name="Multiplier" fill={COLORS[8]} radius={[3,3,0,0]} />
             </BarChart>

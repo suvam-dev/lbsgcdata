@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { DataProvider } from "./context/DataContext";
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import ExecSummary from "./pages/ExecSummary";
 import UsageTrends from "./pages/UsageTrends";
 import ChannelAnalysis from "./pages/ChannelAnalysis";
@@ -20,6 +21,15 @@ const TABS = [
 ];
 
 export default function App() {
+  return (
+    <ThemeProvider>
+      <AppInner />
+    </ThemeProvider>
+  );
+}
+
+function AppInner() {
+  const { isDark, toggle } = useTheme();
   const [activeTab, setActiveTab] = useState("exec");
   const [clients, setClients] = useState([]);
   const [clientId, setClientId] = useState("client_1");
@@ -94,6 +104,13 @@ export default function App() {
               </select>
             )}
             <div className={styles.version}>v1.0</div>
+            <button
+              className={styles.themeToggle}
+              onClick={toggle}
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDark ? "☀" : "☾"}
+            </button>
             <button className={styles.menuToggle} onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? "✕" : "☰"}
             </button>

@@ -21,3 +21,13 @@ export const CHART = {
   gridLine:  "rgba(255,255,255,0.04)",
   axisText:  "#4a4a5e",
 };
+
+export const CHART_LIGHT = {
+  gridLine: "rgba(0,0,0,0.06)",
+  axisText: "#888899",
+};
+
+export const CHART_DARK = {
+  gridLine: "rgba(255,255,255,0.04)",
+  axisText: "#4a4a5e",
+};

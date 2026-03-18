@@ -1,13 +1,16 @@
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useData } from "../context/DataContext";
+import { useTheme } from "../context/ThemeContext";
 import KpiCard from "../components/KpiCard";
 import SectionTitle from "../components/SectionTitle";
 import CustomTooltip from "../components/CustomTooltip";
 import { pct } from "../utils/formatters";
-import { COLORS, CHART } from "../utils/constants";
+import { COLORS, CHART, CHART_LIGHT, CHART_DARK } from "../utils/constants";
 import styles from "./TypeMixFunnel.module.css";
 
 export default function TypeMixFunnel() {
+  const { isDark } = useTheme();
+  const chartMeta = isDark ? CHART_DARK : CHART_LIGHT;
   const data = useData();
   const { outputTypes, inputTypes, platforms, language } = data;
 
@@ -42,9 +45,9 @@ export default function TypeMixFunnel() {
           <SectionTitle sub="Created vs Published by output type">Output Type Funnel</SectionTitle>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={outputTypes} layout="vertical" margin={{ left: 10, right: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART.gridLine} />
-              <XAxis type="number" tick={{ fontSize: 10, fill: CHART.axisText }} />
-              <YAxis dataKey="type" type="category" tick={{ fontSize: 11, fill: CHART.axisText }} width={110} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartMeta.gridLine} />
+              <XAxis type="number" tick={{ fontSize: 10, fill: chartMeta.axisText }} />
+              <YAxis dataKey="type" type="category" tick={{ fontSize: 11, fill: chartMeta.axisText }} width={110} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="created" name="Created" fill={CHART.created} opacity={0.7} radius={[0,3,3,0]} />
               <Bar dataKey="published" name="Published" fill={CHART.published} radius={[0,3,3,0]} />
@@ -56,9 +59,9 @@ export default function TypeMixFunnel() {
           <SectionTitle sub="Upload volumes by content category">Input Type Distribution</SectionTitle>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={inputTypes.slice(0,7)} layout="vertical" margin={{ left: 10, right: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={CHART.gridLine} />
-              <XAxis type="number" tick={{ fontSize: 10, fill: CHART.axisText }} />
-              <YAxis dataKey="type" type="category" tick={{ fontSize: 11, fill: CHART.axisText }} width={100} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartMeta.gridLine} />
+              <XAxis type="number" tick={{ fontSize: 10, fill: chartMeta.axisText }} />
+              <YAxis dataKey="type" type="category" tick={{ fontSize: 11, fill: chartMeta.axisText }} width={100} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="uploaded" name="Uploaded" fill={CHART.uploaded} opacity={0.8} radius={[0,3,3,0]} />
               <Bar dataKey="published" name="Published" fill={CHART.warn} radius={[0,3,3,0]} />
