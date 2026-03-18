@@ -1,0 +1,81 @@
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  animation: fadeIn 0.4s ease-out;
+}
+
+.toggleContainer {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.toggleBtn {
+  padding: 7px 20px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  background: var(--glass-bg);
+  color: var(--color-text-tertiary);
+  border: 1px solid var(--glass-border);
+  font-weight: 500;
+  font-family: var(--font-sans);
+  transition: all var(--transition-base);
+}
+
+.toggleBtn:hover {
+  background: var(--glass-bg-hover);
+  color: var(--color-text-secondary);
+}
+
+.toggleBtnActive {
+  background: rgba(var(--theme-primary-rgb), 0.12);
+  color: var(--color-accent-cyan);
+  border-color: rgba(var(--theme-primary-rgb), 0.3);
+  font-weight: 700;
+}
+
+.trendCard {
+  background: var(--glass-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border: 1px solid var(--glass-border);
+  margin-bottom: var(--space-lg);
+  backdrop-filter: blur(8px);
+  transition: all var(--transition-base);
+}
+
+.trendCard:hover {
+  border-color: var(--color-border-hover);
+}
+
+.chartGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+
+.smallChartCard {
+  background: var(--glass-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border: 1px solid var(--glass-border);
+  transition: all var(--transition-base);
+}
+
+.smallChartCard:hover {
+  border-color: var(--color-border-hover);
+}
+
+
+@media (max-width: 768px) {
+  .kpiGrid { grid-template-columns: 1fr 1fr; gap: var(--space-sm); }
+  .chartGrid { grid-template-columns: 1fr; }
+  .toggleContainer { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  .kpiGrid { grid-template-columns: 1fr; }
+}

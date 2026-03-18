@@ -1,0 +1,192 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.4s ease-out;
+}
+
+.warningBanner {
+  background: rgba(251, 191, 36, 0.08);
+  color: var(--color-accent-yellow);
+  padding: 12px 20px;
+  font-size: var(--text-xs);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.12);
+  font-family: var(--font-mono);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chatArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.messageRow { display: flex; animation: fadeIn 0.3s ease-out; }
+.messageRowUser { justify-content: flex-end; }
+.messageRowSystem { justify-content: flex-start; }
+
+.messageBubble {
+  max-width: 80%;
+  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.messageBubbleUser {
+  background: linear-gradient(135deg, rgba(var(--theme-primary-rgb), 0.12), rgba(139, 92, 246, 0.08));
+  border: 1px solid rgba(var(--theme-primary-rgb), 0.2);
+  color: var(--color-text-primary);
+  border-bottom-right-radius: 4px;
+}
+
+.messageBubbleSystem {
+  background: var(--glass-bg-hover);
+  border: 1px solid var(--glass-border);
+  color: var(--color-text-secondary);
+  border-bottom-left-radius: 4px;
+  white-space: pre-wrap;
+}
+
+.messageBubbleError {
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.15);
+  color: var(--color-accent-red);
+}
+
+.emptyState { margin: auto; text-align: center; color: var(--color-text-tertiary); }
+
+.emptyIcon {
+  font-size: 40px;
+  background: linear-gradient(135deg, var(--color-accent-cyan), var(--color-accent-purple));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: var(--space-xs);
+}
+
+.emptyTitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-sm);
+  font-weight: 700;
+}
+
+.emptySub {
+  font-size: var(--text-sm);
+  max-width: 340px;
+  line-height: 1.6;
+  margin: 0 auto;
+}
+
+.pillContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: center;
+  margin-top: var(--space-lg);
+}
+
+.suggestionPill {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.suggestionPill:hover {
+  background: rgba(var(--theme-primary-rgb), 0.08);
+  color: var(--color-accent-cyan);
+  border-color: rgba(var(--theme-primary-rgb), 0.2);
+  transform: translateY(-1px);
+}
+
+.inputArea {
+  padding: var(--space-lg);
+  border-top: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.inputForm { display: flex; gap: 12px; }
+
+.inputField {
+  flex: 1;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  outline: none;
+  transition: all var(--transition-base);
+}
+
+.inputField:focus {
+  border-color: var(--color-accent-cyan);
+  box-shadow: 0 0 12px rgba(var(--theme-primary-rgb), 0.1);
+  background: var(--glass-bg-hover);
+}
+
+.inputField:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.sendBtn {
+  background: linear-gradient(135deg, var(--color-accent-cyan), var(--color-accent-purple));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0 28px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  transition: all var(--transition-base);
+}
+
+.sendBtn:hover {
+  box-shadow: 0 0 20px rgba(var(--theme-primary-rgb), 0.3);
+  transform: translateY(-1px);
+}
+
+.sendBtn:disabled {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-tertiary);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+
+@media (max-width: 768px) {
+  .container {
+    height: auto;
+    min-height: calc(100vh - 140px);
+    border-radius: var(--radius-md);
+  }
+
+  .messageBubble { max-width: 90%; padding: 12px 16px; }
+  .inputField { padding: 12px 14px; }
+  .sendBtn { padding: 0 20px; }
+  .pillContainer { gap: 6px; }
+
+  .suggestionPill {
+    font-size: 10px;
+    padding: 6px 12px;
+  }
+}
