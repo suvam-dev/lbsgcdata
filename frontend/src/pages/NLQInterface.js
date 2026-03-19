@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useData } from "../context/DataContext";
-import { queryNLQ, queryNLQLocal } from "../api/groq";
+import { queryNLQ, queryNLQLocal, buildSystemPrompt } from "../api/groq";
 import styles from "./NLQInterface.module.css";
 
-const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+const apiKey = process.env.REACT_APP_GROQ_API_KEY;
 
 const SUGGESTIONS = [
   "What is my best performing channel?",
@@ -39,9 +39,17 @@ export default function NLQInterface() {
       let replyText = "";
       
       if (!apiKey) {
-        replyText = queryNLQLocal(q, dataPayload);
+        replyText = queryNLQLocal(q);
       } else {
-        replyText = await queryNLQ(q, dataPayload, apiKey);
+        const sysPrompt = buildSystemPrompt(dataPayload);
+        const history = chat
+          .filter(m => m.role !== "error")
+          .map(m => ({
+            role: m.role === "system" ? "assistant" : m.role,
+            content: m.text
+          }));
+        history.push({ role: "user", content: q });
+        replyText = await queryNLQ(history, sysPrompt);
       }
       
       setChat(prev => [...prev, { role: "system", text: replyText }]);
