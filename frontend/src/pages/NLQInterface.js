@@ -3,6 +3,8 @@ import { useData } from "../context/DataContext";
 import { queryNLQ, queryNLQLocal } from "../api/groq";
 import styles from "./NLQInterface.module.css";
 
+const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+
 const SUGGESTIONS = [
   "What is my best performing channel?",
   "Why is my publish rate so low?",
@@ -17,7 +19,6 @@ export default function NLQInterface() {
   const [loadingMsg, setLoadingMsg] = useState(false);
   const scrollRef = useRef(null);
 
-  const apiKey = process.env.REACT_APP_GROQ_API_KEY;
 
   useEffect(() => {
     if (scrollRef.current) {
