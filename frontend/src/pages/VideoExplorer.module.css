@@ -1,6 +1,6 @@
 .kpiGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
   margin-bottom: 20px;
 }
@@ -30,10 +30,11 @@
   margin-bottom: 16px;
 }
 
-.filterRow .searchInput {
+.filterRow .searchInput,
+.filterRow .selectInput {
   flex: 1;
   min-width: 200px;
-  margin-bottom: 0;
+  margin-bottom: 0 !important;
 }
 
 .container {

@@ -8,7 +8,7 @@ import { fmt } from "../utils/formatters";
 const pct = (a, b) => (b === 0 ? "0.00%" : `${((a / b) * 100).toFixed(2)}%`);
 
 export default function VideoExplorer() {
-  const { channels, users, inputTypes, outputTypes, channelUsers, platforms } = useData();
+  const { channels, channelUsers, platforms } = useData();
 
   const [search, setSearch] = useState("");
   const [filterChan, setFilterChan] = useState("all");
@@ -53,12 +53,9 @@ export default function VideoExplorer() {
   const autoUpload = (channelUsers || []).find((r) =>
     r.user?.toLowerCase().includes("auto")
   );
-  const missingPlatformPct =
-    platforms.length > 0
-      ? Math.round(
-          (platforms.filter((p) => p.count === 0).length / platforms.length) * 100
-        )
-      : 0;
+  const missingPlatformPct = platforms.length > 0
+    ? Math.round((platforms.filter((p) => p.count === 0).length / platforms.length) * 100)
+    : 0;
 
   return (
     <div>
@@ -99,9 +96,7 @@ export default function VideoExplorer() {
           <strong>Data Quality Observations:</strong>{" "}
           {neverPublished} of {totalChannels} channels have never published.
           {" "}
-          {autoUpload
-            ? `Auto Upload generates ${fmt(autoUpload.uploaded)} videos with 0 published.`
-            : ""}
+          {autoUpload ? `Auto Upload generates ${fmt(autoUpload.uploaded)} videos with 0 published.` : ""}
           {" "}
           Several platforms show 0 publishes despite active creation.
         </div>
@@ -116,66 +111,50 @@ export default function VideoExplorer() {
           placeholder="Search by channel or user..."
           className={styles.searchInput}
         />
-        <select
-          value={filterChan}
-          onChange={(e) => setFilterChan(e.target.value)}
-          className={styles.selectInput}
-          style={{ marginBottom: 0, flex: "0 0 auto" }}
-        >
+        <select value={filterChan} onChange={(e) => setFilterChan(e.target.value)} className={styles.selectInput}>
           <option value="all">All Channels</option>
           {channels.map((c) => (
-            <option key={c.channel} value={c.channel}>
-              Channel {c.channel}
-            </option>
+            <option key={c.channel} value={c.channel}>Channel {c.channel}</option>
           ))}
         </select>
-        <select
-          value={filterUser}
-          onChange={(e) => setFilterUser(e.target.value)}
-          className={styles.selectInput}
-          style={{ marginBottom: 0, flex: "0 0 auto" }}
-        >
+        <select value={filterUser} onChange={(e) => setFilterUser(e.target.value)} className={styles.selectInput}>
           <option value="all">All Users</option>
           {allUsers.map((u) => (
-            <option key={u} value={u}>
-              {u}
-            </option>
+            <option key={u} value={u}>{u}</option>
           ))}
         </select>
       </div>
 
-      {/* Table */}
-      <div className={styles.mainContent} style={{ height: "auto", borderRadius: 12, overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+      {/* Styled Table using Real Data */}
+      <div className={styles.mainContent} style={{ height: "auto", borderRadius: 12, overflowX: "auto", overflowY: "hidden", background: "#111113", border: "1px solid #222" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, fontFamily: "var(--font-mono)" }}>
           <thead>
-            <tr style={{ background: "rgba(255,255,255,0.04)" }}>
+            <tr style={{ background: "transparent", borderBottom: "1px solid #222" }}>
               {[
-                { key: "channel", label: "Channel" },
-                { key: "user", label: "User" },
-                { key: "uploaded", label: "Uploaded" },
-                { key: "created", label: "Created" },
-                { key: "published", label: "Published" },
-                { key: "publish_rate_pct", label: "Pub Rate" },
-                { key: "uploaded_hrs", label: "Upload Hrs" },
-                { key: "created_hrs", label: "Created Hrs" },
+                { key: "channel", label: "CHANNEL" },
+                { key: "user", label: "USER" },
+                { key: "uploaded", label: "UPLOADED" },
+                { key: "created", label: "CREATED" },
+                { key: "publish_rate_pct", label: "PUB RATE" },
+                { key: "published", label: "PUBLISHED" },
+                { key: "uploaded_hrs", label: "HOURS (UP/CR)" },
               ].map(({ key, label }) => (
                 <th
                   key={key}
                   onClick={() => toggleSort(key)}
                   style={{
                     textAlign: "left",
-                    padding: "10px 14px",
-                    color: sortBy === key ? "var(--theme-primary, #00D2FF)" : "#555",
+                    padding: "16px 20px",
+                    color: sortBy === key ? "#fff" : "#666",
                     fontWeight: 600,
-                    fontFamily: "var(--font-mono)",
                     fontSize: 10,
-                    letterSpacing: "0.08em",
-                    cursor: "pointer",
-                    userSelect: "none",
+                    letterSpacing: "0.1em",
                     whiteSpace: "nowrap",
+                    cursor: "pointer",
+                    userSelect: "none"
                   }}
                 >
-                  {label.toUpperCase()}{sortIcon(key)}
+                  {label}{sortIcon(key)}
                 </th>
               ))}
             </tr>
@@ -183,51 +162,51 @@ export default function VideoExplorer() {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className={styles.emptyState}>
+                <td colSpan={7} className={styles.emptyState} style={{ padding: "40px", textAlign: "center", color: "#666" }}>
                   No rows match the current filters.
                 </td>
               </tr>
             ) : (
               filtered.map((r, i) => {
-                const rate = r.created > 0 ? (r.published / r.created) * 100 : 0;
+                const rateFormatted = pct(r.published, r.created);
                 return (
                   <tr
                     key={`${r.channel}-${r.user}`}
-                    className={styles.videoCard}
                     style={{
-                      borderTop: "1px solid rgba(255,255,255,0.04)",
-                      background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)",
-                      cursor: "default",
+                      borderBottom: i === filtered.length - 1 ? "none" : "1px solid #222",
+                      background: "transparent",
                     }}
                   >
-                    <td style={{ padding: "10px 14px", color: "var(--theme-primary, #00D2FF)", fontWeight: 700, fontFamily: "var(--font-mono)" }}>
+                    <td style={{ padding: "16px 20px", color: "#ddd", fontWeight: 600 }}>
                       {r.channel}
                     </td>
-                    <td style={{ padding: "10px 14px", color: "#ccc" }}>{r.user}</td>
-                    <td style={{ padding: "10px 14px", color: "#aaa", fontFamily: "var(--font-mono)" }}>
+                    <td style={{ padding: "16px 20px", color: (r.user || "").includes("Unknown") || (r.user || "").includes("Auto") ? "#ef4444" : "#9ca3af", fontWeight: (r.user || "").includes("Unknown") || (r.user || "").includes("Auto") ? 600 : 400 }}>
+                      {r.user}
+                    </td>
+                    <td style={{ padding: "16px 20px", color: "#6b7280" }}>
                       {fmt(r.uploaded || 0)}
                     </td>
-                    <td style={{ padding: "10px 14px", color: "#aaa", fontFamily: "var(--font-mono)" }}>
+                    <td style={{ padding: "16px 20px", color: "#6b7280" }}>
                       {fmt(r.created || 0)}
                     </td>
-                    <td
-                      style={{
-                        padding: "10px 14px",
-                        fontFamily: "var(--font-mono)",
-                        fontWeight: r.published > 0 ? 700 : 400,
-                        color: r.published > 0 ? "#6BCB77" : "#333",
-                      }}
-                    >
-                      {r.published || 0}
+                    <td style={{ padding: "16px 20px" }}>
+                      <span style={{ background: "rgba(139, 92, 246, 0.15)", color: "#a78bfa", padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+                        {rateFormatted}
+                      </span>
                     </td>
-                    <td style={{ padding: "10px 14px", fontFamily: "var(--font-mono)", color: rate > 1 ? "#6BCB77" : "#666" }}>
-                      {pct(r.published, r.created)}
+                    <td style={{ padding: "16px 20px" }}>
+                      {r.published > 0 ? (
+                        <span style={{ background: "rgba(52, 211, 153, 0.15)", color: "#34d399", padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+                          {fmt(r.published)}
+                        </span>
+                      ) : (
+                        <span style={{ background: "rgba(255, 255, 255, 0.05)", color: "#6b7280", padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+                          0
+                        </span>
+                      )}
                     </td>
-                    <td style={{ padding: "10px 14px", color: "#555", fontFamily: "var(--font-mono)" }}>
-                      {(r.uploaded_hrs || 0).toFixed(1)}h
-                    </td>
-                    <td style={{ padding: "10px 14px", color: "#555", fontFamily: "var(--font-mono)" }}>
-                      {(r.created_hrs || 0).toFixed(1)}h
+                    <td style={{ padding: "16px 20px", color: "var(--color-accent-cyan)" }}>
+                      {(r.uploaded_hrs || 0).toFixed(1)}h / {(r.created_hrs || 0).toFixed(1)}h
                     </td>
                   </tr>
                 );
@@ -237,19 +216,18 @@ export default function VideoExplorer() {
         </table>
         <div
           style={{
-            padding: "10px 14px",
-            borderTop: "1px solid rgba(255,255,255,0.06)",
+            padding: "16px 20px",
             fontSize: 11,
-            color: "#444",
+            color: "#666",
+            fontFamily: "var(--font-mono)",
             display: "flex",
             justifyContent: "space-between",
           }}
         >
           <span>
-            Showing {filtered.length} of {(channelUsers || []).length} rows
-            {" "}(Channel × User breakdown)
+            Showing {filtered.length} of {(channelUsers || []).length} rows (Channel × User breakdown)
           </span>
-          <span style={{ color: "#555" }}>Click column headers to sort</span>
+          <span style={{ color: "#888", cursor: "pointer" }}>Export CSV ↓</span>
         </div>
       </div>
     </div>
