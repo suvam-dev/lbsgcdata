@@ -26,8 +26,9 @@ export function DataProvider({ clientId, children }) {
       fetch(`${base}/output-types`).then(r => r.json()),
       fetch(`${base}/language`).then(r => r.json()),
       fetch(`${base}/platforms`).then(r => r.json()),
+      fetch(`${base}/channel-users`).then(r => r.json()),
     ])
-      .then(([summary, monthly, channels, users, inputTypes, outputTypes, language, platforms]) => {
+      .then(([summary, monthly, channels, users, inputTypes, outputTypes, language, platforms, channelUsersResp]) => {
         const normMonthly = (monthly.data || []).map(d => ({
           ...d,
           uploadedHrs: d.uploaded_hrs ?? 0,
@@ -69,26 +70,12 @@ export function DataProvider({ clientId, children }) {
         }));
 
 
-        let videos = [];
-        try {
-          normChannels.forEach(ch => {
-            normOutputTypes.forEach(ot => {
-              const count = Math.min(ch.created || 0, 3);
-              for (let j = 0; j < count; j++) {
-                videos.push({
-                  video_id: `${ch.channel}-${ot.type}-${j}`,
-                  title: `${ot.type} — ${ch.channel} #${j + 1}`,
-                  channel: ch.channel,
-                  output_type: ot.type,
-                  is_published: j < (ch.published || 0),
-                  duration_sec: Math.floor(Math.random() * 600) + 30,
-                  created_at: new Date(2025, 2 + Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
-                  platforms: platformArr.filter(p => p.count > 0).slice(0, 2).map(p => p.platform),
-                });
-              }
-            });
-          });
-        } catch {}
+        const channelUsers = (channelUsersResp.data || []).map(d => ({
+          ...d,
+          uploaded_hrs: d.uploaded_hrs ?? 0,
+          created_hrs: d.created_hrs ?? 0,
+          published_hrs: d.published_hrs ?? 0,
+        }));
 
         setData({
           clientId,
@@ -101,7 +88,7 @@ export function DataProvider({ clientId, children }) {
           language: normLang,
           platforms: platformArr,
           platformsByChannel: platforms.by_channel || [],
-          videos,
+          channelUsers,
         });
       })
       .catch(err => setError(err.message))

@@ -5,118 +5,214 @@ import styles from "./NLQInterface.module.css";
 
 const apiKey = process.env.REACT_APP_GROQ_API_KEY;
 
-const SUGGESTIONS = [
-  "What is my best performing channel?",
-  "Why is my publish rate so low?",
-  "Which output type should I focus on?",
-  "How am I doing on YouTube vs TikTok?"
+const QUICK_QUERIES = [
+  "Which channels have the biggest publish gaps?",
+  "What output type has the best publish rate?",
+  "Top users by published videos",
+  "How does English vs Hindi compare?",
+  "What data quality issues exist?",
 ];
 
 export default function NLQInterface() {
-  const { summary, monthly, channels, outputTypes, inputTypes } = useData();
+  const liveData = useData();
   const [query, setQuery] = useState("");
-  const [chat, setChat] = useState([]);
-  const [loadingMsg, setLoadingMsg] = useState(false);
-  const scrollRef = useRef(null);
-
+  const [messages, setMessages] = useState([
+    {
+      role: "assistant",
+      content:
+        "Hi! I'm your Frammer AI analytics assistant powered by Groq. Ask me anything about your video data — channels, users, publish rates, trends, or data quality.",
+    },
+  ]);
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef(null);
+  const bottomRef = useRef(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [chat, loadingMsg]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
-  const handleSend = async (overrideQuery) => {
-    const q = overrideQuery || query;
-    if (!q.trim()) return;
-
-    setChat(prev => [...prev, { role: "user", text: q }]);
+  const handleSubmit = async (q) => {
+    const question = q || query;
+    if (!question.trim() || loading) return;
+    const newMessages = [...messages, { role: "user", content: question }];
+    setMessages(newMessages);
+    setLoading(true);
     setQuery("");
-    setLoadingMsg(true);
-
     try {
-      const dataPayload = { summary, monthly, channels, outputTypes, inputTypes };
-      let replyText = "";
-      
-      if (!apiKey) {
-        replyText = queryNLQLocal(q);
+      const conversationHistory = newMessages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+      let content;
+      if (apiKey) {
+        const systemPrompt = buildSystemPrompt(liveData);
+        content = await queryNLQ(conversationHistory, systemPrompt);
       } else {
-        const sysPrompt = buildSystemPrompt(dataPayload);
-        const history = chat
-          .filter(m => m.role !== "error")
-          .map(m => ({
-            role: m.role === "system" ? "assistant" : m.role,
-            content: m.text
-          }));
-        history.push({ role: "user", content: q });
-        replyText = await queryNLQ(history, sysPrompt);
+        content = queryNLQLocal(question);
       }
-      
-      setChat(prev => [...prev, { role: "system", text: replyText }]);
-    } catch (err) {
-      setChat(prev => [...prev, { role: "error", text: "Failed to connect to the analysis engine: " + err.message }]);
-    } finally {
-      setLoadingMsg(false);
+      setMessages((h) => [...h, { role: "assistant", content }]);
+    } catch (e) {
+      setMessages((h) => [
+        ...h,
+        { role: "assistant", content: `Error: ${e.message}` },
+      ]);
     }
+    setLoading(false);
   };
 
-  return (
-    <div className={styles.container}>      {!apiKey && (
-        <div className={styles.warningBanner}>
-          ⚠️ REACT_APP_GROQ_API_KEY is missing. Using limited local fallback logic. AI responses disabled.
-        </div>
-      )}
+  const clearChat = () =>
+    setMessages([
+      {
+        role: "assistant",
+        content: "Chat cleared. What would you like to know about your data?",
+      },
+    ]);
 
-      <div className={styles.chatArea} ref={scrollRef}>
-        {chat.length === 0 ? (
-          <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>✦</div>
-            <div className={styles.emptyTitle}>Ask Frammer AI</div>
-            <div className={styles.emptySub}>Ask natural language questions about your video production pipeline.</div>
-            
-            <div className={styles.pillContainer}>
-              {SUGGESTIONS.map((s, i) => (
-                <div key={i} className={styles.suggestionPill} onClick={() => handleSend(s)}>
-                  "{s}"
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          chat.map((msg, i) => (
-            <div key={i} className={`${styles.messageRow} ${msg.role === 'user' ? styles.messageRowUser : styles.messageRowSystem}`}>
-              <div className={`${styles.messageBubble} ${
-                msg.role === 'user' ? styles.messageBubbleUser : 
-                msg.role === 'error' ? styles.messageBubbleError : 
-                styles.messageBubbleSystem
-              }`}>
-                {msg.text}
-              </div>
-            </div>
-          ))
-        )}
-        
-        {loadingMsg && (
-          <div className={`${styles.messageRow} ${styles.messageRowSystem}`}>
-            <div className={`${styles.messageBubble} ${styles.messageBubbleSystem}`} style={{opacity: 0.5}}>
-              Analyzing data pipeline...
-            </div>
-          </div>
-        )}
+  return (
+    <div className={styles.container}>
+      {/* Header */}
+      <div className={styles.chatHeader}>
+        <div className={styles.statusIndicator}>
+          {apiKey ? (
+            <span className={styles.statusOnline}>● Groq AI · llama-3.3-70b-versatile</span>
+          ) : (
+            <span className={styles.statusOffline}>● Local mode — add REACT_APP_GROQ_API_KEY to .env</span>
+          )}
+        </div>
+        <button onClick={clearChat} className={styles.clearBtn}>Clear chat</button>
       </div>
 
+      {/* Quick query chips */}
+      <div className={styles.pillContainer}>
+        {QUICK_QUERIES.map((q) => (
+          <button
+            key={q}
+            onClick={() => handleSubmit(q)}
+            disabled={loading}
+            className={styles.suggestionPill}
+          >
+            {q}
+          </button>
+        ))}
+      </div>
+
+      {/* Chat window — avatar bubble style from reference */}
+      <div className={styles.chatArea} ref={bottomRef}>
+        {messages.map((msg, i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              flexDirection: msg.role === "user" ? "row-reverse" : "row",
+              gap: 10,
+              alignItems: "flex-start",
+              marginBottom: 16,
+            }}
+          >
+            {/* Avatar */}
+            <div
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: "50%",
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 11,
+                fontWeight: 700,
+                background:
+                  msg.role === "user"
+                    ? "rgba(123,97,255,0.35)"
+                    : "rgba(0,210,255,0.25)",
+                color: msg.role === "user" ? "#a78bfa" : "#00D2FF",
+              }}
+            >
+              {msg.role === "user" ? "U" : "AI"}
+            </div>
+            {/* Bubble */}
+            <div
+              style={{
+                maxWidth: "76%",
+                padding: "10px 16px",
+                borderRadius:
+                  msg.role === "user"
+                    ? "12px 2px 12px 12px"
+                    : "2px 12px 12px 12px",
+                background:
+                  msg.role === "user"
+                    ? "rgba(123,97,255,0.12)"
+                    : "rgba(0,210,255,0.05)",
+                border: `1px solid ${
+                  msg.role === "user"
+                    ? "rgba(123,97,255,0.2)"
+                    : "rgba(0,210,255,0.1)"
+                }`,
+                fontSize: 13,
+                color: msg.role === "user" ? "#c4b5fd" : "#b8cdd0",
+                lineHeight: 1.7,
+                whiteSpace: "pre-wrap",
+              }}
+            >
+              {msg.content}
+            </div>
+          </div>
+        ))}
+
+        {/* Loading animation */}
+        {loading && (
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16 }}>
+            <div
+              style={{
+                width: 30, height: 30, borderRadius: "50%",
+                background: "rgba(0,210,255,0.25)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 11, fontWeight: 700, color: "#00D2FF", flexShrink: 0,
+              }}
+            >
+              AI
+            </div>
+            <div
+              style={{
+                padding: "10px 16px",
+                borderRadius: "2px 12px 12px 12px",
+                background: "rgba(0,210,255,0.05)",
+                border: "1px solid rgba(0,210,255,0.1)",
+                color: "#555", fontSize: 13,
+                display: "flex", gap: 4, alignItems: "center",
+              }}
+            >
+              <span style={{ animation: "pulse 1s ease-in-out infinite" }}>●</span>
+              <span style={{ animation: "pulse 1s ease-in-out 0.3s infinite" }}>●</span>
+              <span style={{ animation: "pulse 1s ease-in-out 0.6s infinite" }}>●</span>
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input bar */}
       <div className={styles.inputArea}>
-        <form onSubmit={e => { e.preventDefault(); handleSend(); }} className={styles.inputForm}>
-          <input 
-            type="text" 
-            value={query} 
-            onChange={e => setQuery(e.target.value)} 
-            placeholder="E.g. What is my best input type for Shorts?"
-            disabled={loadingMsg}
+        <form
+          onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
+          className={styles.inputForm}
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit()}
+            placeholder="Ask anything about your video analytics..."
+            disabled={loading}
             className={styles.inputField}
           />
-          <button type="submit" disabled={!query.trim() || loadingMsg} className={styles.sendBtn}>
-            Send
+          <button
+            type="submit"
+            disabled={!query.trim() || loading}
+            className={styles.sendBtn}
+          >
+            Send →
           </button>
         </form>
       </div>

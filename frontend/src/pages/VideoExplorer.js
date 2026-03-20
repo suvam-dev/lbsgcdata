@@ -1,117 +1,255 @@
 import { useState, useMemo } from "react";
 import { useData } from "../context/DataContext";
+import KpiCard from "../components/KpiCard";
+import { CHART } from "../utils/constants";
 import styles from "./VideoExplorer.module.css";
 import { fmt } from "../utils/formatters";
 
+const pct = (a, b) => (b === 0 ? "0.00%" : `${((a / b) * 100).toFixed(2)}%`);
+
 export default function VideoExplorer() {
-  const { videos, channels, outputTypes, loading } = useData();
+  const { channels, users, inputTypes, outputTypes, channelUsers, platforms } = useData();
+
   const [search, setSearch] = useState("");
-  const [filterChan, setFilterChan] = useState("ALL");
-  const [filterType, setFilterType] = useState("ALL");
-  const [filterStatus, setFilterStatus] = useState("ALL");
-  const [sortBy, setSortBy] = useState("recent");
+  const [filterChan, setFilterChan] = useState("all");
+  const [filterUser, setFilterUser] = useState("all");
+  const [sortBy, setSortBy] = useState("uploaded");
+  const [sortDir, setSortDir] = useState("desc");
 
+  // Unique user list from real data
+  const allUsers = useMemo(() => {
+    if (!channelUsers) return [];
+    return [...new Set(channelUsers.map((r) => r.user))].sort();
+  }, [channelUsers]);
+
+  // Filter + sort
   const filtered = useMemo(() => {
-    return videos.filter(v => {
-      if (filterChan !== "ALL" && v.channel !== filterChan) return false;
-      if (filterType !== "ALL" && v.output_type !== filterType) return false;
-      if (filterStatus === "PUBLISHED" && !v.is_published) return false;
-      if (filterStatus === "UNPUBLISHED" && v.is_published) return false;
-      if (search && !v.title?.toLowerCase().includes(search.toLowerCase())) return false;
-      return true;
-    }).sort((a, b) => {
-      if (sortBy === "recent") return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-      if (sortBy === "duration_desc") return (b.duration_sec || 0) - (a.duration_sec || 0);
-      if (sortBy === "duration_asc") return (a.duration_sec || 0) - (b.duration_sec || 0);
-      return 0;
+    let rows = channelUsers || [];
+    if (filterChan !== "all") rows = rows.filter((r) => r.channel === filterChan);
+    if (filterUser !== "all") rows = rows.filter((r) => r.user === filterUser);
+    if (search) {
+      const q = search.toLowerCase();
+      rows = rows.filter(
+        (r) =>
+          r.channel?.toLowerCase().includes(q) ||
+          r.user?.toLowerCase().includes(q)
+      );
+    }
+    return [...rows].sort((a, b) => {
+      const dir = sortDir === "desc" ? -1 : 1;
+      return dir * ((a[sortBy] || 0) - (b[sortBy] || 0));
     });
-  }, [videos, search, filterChan, filterType, filterStatus, sortBy]);
+  }, [channelUsers, filterChan, filterUser, search, sortBy, sortDir]);
 
-  if (loading) return <div className={styles.loading}>Loading video database...</div>;
+  const toggleSort = (col) => {
+    if (sortBy === col) setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    else { setSortBy(col); setSortDir("desc"); }
+  };
+  const sortIcon = (col) => (sortBy === col ? (sortDir === "desc" ? " ↓" : " ↑") : "");
+
+  // DQ summary stats from real data
+  const totalChannels = channels.length;
+  const neverPublished = channels.filter((c) => c.published === 0).length;
+  const autoUpload = (channelUsers || []).find((r) =>
+    r.user?.toLowerCase().includes("auto")
+  );
+  const missingPlatformPct =
+    platforms.length > 0
+      ? Math.round(
+          (platforms.filter((p) => p.count === 0).length / platforms.length) * 100
+        )
+      : 0;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <input 
-            type="text" 
-            placeholder="Search titles..." 
-            value={search} 
-            onChange={e => setSearch(e.target.value)}
-            className={styles.searchInput}
-          />
-        </div>
-        
-        <div className={styles.filterSection}>
-          <div className={styles.filterTitle}>Channel</div>
-          <select value={filterChan} onChange={e => setFilterChan(e.target.value)} className={styles.selectInput}>
-            <option value="ALL">All Channels ({channels.length})</option>
-            {channels.map(c => <option key={c.channel} value={c.channel}>{c.channel}</option>)}
-          </select>
+    <div>
+      {/* KPI Cards — data quality focused */}
+      <div className={styles.kpiGrid}>
+        <KpiCard
+          label="Total Channels"
+          value={totalChannels}
+          sub={`${totalChannels - neverPublished} with ≥1 publish`}
+          color={CHART.created}
+        />
+        <KpiCard
+          label="Never Published"
+          value={neverPublished}
+          sub="Channels with 0 publishes"
+          color={CHART.danger}
+          badge="⚠ Risk"
+        />
+        <KpiCard
+          label="Inactive Platforms"
+          value={`${missingPlatformPct}%`}
+          sub="Platforms with 0 publishes"
+          color={CHART.warn}
+          badge="DQ"
+        />
+        <KpiCard
+          label="Auto-Upload"
+          value={fmt(autoUpload?.uploaded ?? 0)}
+          sub="Videos from automation"
+          color={CHART.uploaded}
+        />
+      </div>
 
-          <div className={styles.filterTitle}>Output Type</div>
-          <select value={filterType} onChange={e => setFilterType(e.target.value)} className={styles.selectInput}>
-            <option value="ALL">All Types ({outputTypes.length})</option>
-            {outputTypes.map(t => <option key={t.type} value={t.type}>{t.type}</option>)}
-          </select>
-
-          <div className={styles.filterTitle}>Publish Status</div>
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className={styles.selectInput}>
-            <option value="ALL">All Statuses</option>
-            <option value="PUBLISHED">Published Only</option>
-            <option value="UNPUBLISHED">Unpublished Only</option>
-          </select>
+      {/* Data Quality Alert */}
+      <div className={styles.dqBanner}>
+        <span>🔍</span>
+        <div className={styles.dqText}>
+          <strong>Data Quality Observations:</strong>{" "}
+          {neverPublished} of {totalChannels} channels have never published.
+          {" "}
+          {autoUpload
+            ? `Auto Upload generates ${fmt(autoUpload.uploaded)} videos with 0 published.`
+            : ""}
+          {" "}
+          Several platforms show 0 publishes despite active creation.
         </div>
       </div>
 
-      <div className={styles.mainContent}>
-        <div className={styles.listHeader}>
-          <div className={styles.resultCount}>
-            Showing <strong className={styles.resultHighlight}>{fmt(filtered.length)}</strong> videos
-          </div>
-          <div>
-            <span className={styles.sortLabel}>SORT BY:</span>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.sortSelect}>
-              <option value="recent">Newest First</option>
-              <option value="duration_desc">Duration (High to Low)</option>
-              <option value="duration_asc">Duration (Low to High)</option>
-            </select>
-          </div>
-        </div>
+      {/* Filters */}
+      <div className={styles.filterRow}>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by channel or user..."
+          className={styles.searchInput}
+        />
+        <select
+          value={filterChan}
+          onChange={(e) => setFilterChan(e.target.value)}
+          className={styles.selectInput}
+          style={{ marginBottom: 0, flex: "0 0 auto" }}
+        >
+          <option value="all">All Channels</option>
+          {channels.map((c) => (
+            <option key={c.channel} value={c.channel}>
+              Channel {c.channel}
+            </option>
+          ))}
+        </select>
+        <select
+          value={filterUser}
+          onChange={(e) => setFilterUser(e.target.value)}
+          className={styles.selectInput}
+          style={{ marginBottom: 0, flex: "0 0 auto" }}
+        >
+          <option value="all">All Users</option>
+          {allUsers.map((u) => (
+            <option key={u} value={u}>
+              {u}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        <div className={styles.listScrollArea}>
-          {filtered.length === 0 ? (
-            <div className={styles.emptyState}>No videos match the current filters.</div>
-          ) : (
-            filtered.slice(0, 100).map(v => (
-              <div key={v.video_id} className={styles.videoCard}>
-                <div className={styles.videoHeader}>
-                  <div className={styles.videoTitle}>{v.title || "Untitled Video"}</div>
-                  <div className={`${styles.videoStatus} ${v.is_published ? styles.statusPublished : styles.statusUnpublished}`}>
-                    {v.is_published ? "PUBLISHED" : "UNPUBLISHED"}
-                  </div>
-                </div>
-                
-                <div className={styles.videoMetrics}>
-                  <div className={styles.metric}>CREATED: <span className={styles.metricValue}>{v.created_at?.split('T')[0] || "Unknown"}</span></div>
-                  <div className={styles.metric}>CHANNEL: <span className={styles.metricValue}>{v.channel}</span></div>
-                  <div className={styles.metric}>TYPE: <span className={styles.metricValue}>{v.output_type}</span></div>
-                  <div className={styles.metric}>DUR: <span className={styles.metricValue}>{v.duration_sec ? (v.duration_sec/60).toFixed(1)+'m' : '--'}</span></div>
-                </div>
-
-                {v.platforms && v.platforms.length > 0 && (
-                  <div className={styles.platformsContainer}>
-                    {v.platforms.map(p => (
-                      <span key={p} className={styles.platformBadge}>{p}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-          {filtered.length > 100 && (
-             <div className={styles.emptyState}>+ {fmt(filtered.length - 100)} more (results truncated)</div>
-          )}
+      {/* Table */}
+      <div className={styles.mainContent} style={{ height: "auto", borderRadius: 12, overflow: "hidden" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+          <thead>
+            <tr style={{ background: "rgba(255,255,255,0.04)" }}>
+              {[
+                { key: "channel", label: "Channel" },
+                { key: "user", label: "User" },
+                { key: "uploaded", label: "Uploaded" },
+                { key: "created", label: "Created" },
+                { key: "published", label: "Published" },
+                { key: "publish_rate_pct", label: "Pub Rate" },
+                { key: "uploaded_hrs", label: "Upload Hrs" },
+                { key: "created_hrs", label: "Created Hrs" },
+              ].map(({ key, label }) => (
+                <th
+                  key={key}
+                  onClick={() => toggleSort(key)}
+                  style={{
+                    textAlign: "left",
+                    padding: "10px 14px",
+                    color: sortBy === key ? "var(--theme-primary, #00D2FF)" : "#555",
+                    fontWeight: 600,
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 10,
+                    letterSpacing: "0.08em",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {label.toUpperCase()}{sortIcon(key)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={8} className={styles.emptyState}>
+                  No rows match the current filters.
+                </td>
+              </tr>
+            ) : (
+              filtered.map((r, i) => {
+                const rate = r.created > 0 ? (r.published / r.created) * 100 : 0;
+                return (
+                  <tr
+                    key={`${r.channel}-${r.user}`}
+                    className={styles.videoCard}
+                    style={{
+                      borderTop: "1px solid rgba(255,255,255,0.04)",
+                      background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)",
+                      cursor: "default",
+                    }}
+                  >
+                    <td style={{ padding: "10px 14px", color: "var(--theme-primary, #00D2FF)", fontWeight: 700, fontFamily: "var(--font-mono)" }}>
+                      {r.channel}
+                    </td>
+                    <td style={{ padding: "10px 14px", color: "#ccc" }}>{r.user}</td>
+                    <td style={{ padding: "10px 14px", color: "#aaa", fontFamily: "var(--font-mono)" }}>
+                      {fmt(r.uploaded || 0)}
+                    </td>
+                    <td style={{ padding: "10px 14px", color: "#aaa", fontFamily: "var(--font-mono)" }}>
+                      {fmt(r.created || 0)}
+                    </td>
+                    <td
+                      style={{
+                        padding: "10px 14px",
+                        fontFamily: "var(--font-mono)",
+                        fontWeight: r.published > 0 ? 700 : 400,
+                        color: r.published > 0 ? "#6BCB77" : "#333",
+                      }}
+                    >
+                      {r.published || 0}
+                    </td>
+                    <td style={{ padding: "10px 14px", fontFamily: "var(--font-mono)", color: rate > 1 ? "#6BCB77" : "#666" }}>
+                      {pct(r.published, r.created)}
+                    </td>
+                    <td style={{ padding: "10px 14px", color: "#555", fontFamily: "var(--font-mono)" }}>
+                      {(r.uploaded_hrs || 0).toFixed(1)}h
+                    </td>
+                    <td style={{ padding: "10px 14px", color: "#555", fontFamily: "var(--font-mono)" }}>
+                      {(r.created_hrs || 0).toFixed(1)}h
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+        <div
+          style={{
+            padding: "10px 14px",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            fontSize: 11,
+            color: "#444",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <span>
+            Showing {filtered.length} of {(channelUsers || []).length} rows
+            {" "}(Channel × User breakdown)
+          </span>
+          <span style={{ color: "#555" }}>Click column headers to sort</span>
         </div>
       </div>
     </div>
