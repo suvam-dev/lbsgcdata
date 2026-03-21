@@ -123,9 +123,9 @@ export default function NLQInterface() {
                 fontWeight: 700,
                 background:
                   msg.role === "user"
-                    ? "rgba(123,97,255,0.35)"
-                    : "rgba(0,210,255,0.25)",
-                color: msg.role === "user" ? "#a78bfa" : "#00D2FF",
+                    ? "rgba(139, 92, 246, 0.25)"
+                    : "rgba(6, 182, 212, 0.25)",
+                color: msg.role === "user" ? "#d8b4fe" : "#67e8f9",
               }}
             >
               {msg.role === "user" ? "U" : "AI"}
@@ -149,7 +149,7 @@ export default function NLQInterface() {
                     : "rgba(0,210,255,0.1)"
                 }`,
                 fontSize: 13,
-                color: msg.role === "user" ? "#c4b5fd" : "#b8cdd0",
+                color: msg.role === "user" ? "var(--color-text-primary, #f8fafc)" : "var(--color-text-secondary, #e2e8f0)",
                 lineHeight: 1.7,
                 whiteSpace: "pre-wrap",
               }}
@@ -165,9 +165,9 @@ export default function NLQInterface() {
             <div
               style={{
                 width: 30, height: 30, borderRadius: "50%",
-                background: "rgba(0,210,255,0.25)",
+                background: "rgba(6, 182, 212, 0.25)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 11, fontWeight: 700, color: "#00D2FF", flexShrink: 0,
+                fontSize: 11, fontWeight: 700, color: "#67e8f9", flexShrink: 0,
               }}
             >
               AI
@@ -178,7 +178,7 @@ export default function NLQInterface() {
                 borderRadius: "2px 12px 12px 12px",
                 background: "rgba(0,210,255,0.05)",
                 border: "1px solid rgba(0,210,255,0.1)",
-                color: "#555", fontSize: 13,
+                color: "var(--color-text-secondary, #e2e8f0)", fontSize: 13,
                 display: "flex", gap: 4, alignItems: "center",
               }}
             >
