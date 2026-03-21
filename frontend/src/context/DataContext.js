@@ -103,7 +103,7 @@ export function DataProvider({ clientId, children }) {
       <div className={styles.errorTitle}>Failed to load data</div>
       <div className={styles.errorMessage}>{error}</div>
       <div className={styles.errorHint}>
-        Is the API running? → <code className={styles.errorCode}>uvicorn app:app --reload</code>
+        Is the API running? → <code className={styles.errorCode}>uvicorn index:app --reload</code>
       </div>
     </div>
   );

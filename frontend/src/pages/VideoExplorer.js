@@ -126,10 +126,10 @@ export default function VideoExplorer() {
       </div>
 
       {/* Styled Table using Real Data */}
-      <div className={styles.mainContent} style={{ height: "auto", borderRadius: 12, overflowX: "auto", overflowY: "hidden", background: "#111113", border: "1px solid #222" }}>
+      <div className={styles.mainContent} style={{ height: "auto", borderRadius: 12, overflowX: "auto", overflowY: "hidden", background: "var(--color-bg-surface)", border: "1px solid var(--color-border)" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, fontFamily: "var(--font-mono)" }}>
           <thead>
-            <tr style={{ background: "transparent", borderBottom: "1px solid #222" }}>
+            <tr style={{ background: "transparent", borderBottom: "1px solid var(--color-border)" }}>
               {[
                 { key: "channel", label: "CHANNEL" },
                 { key: "user", label: "USER" },
@@ -145,7 +145,7 @@ export default function VideoExplorer() {
                   style={{
                     textAlign: "left",
                     padding: "16px 20px",
-                    color: sortBy === key ? "#fff" : "#666",
+                    color: sortBy === key ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
                     fontWeight: 600,
                     fontSize: 10,
                     letterSpacing: "0.1em",
@@ -162,7 +162,7 @@ export default function VideoExplorer() {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} className={styles.emptyState} style={{ padding: "40px", textAlign: "center", color: "#666" }}>
+                <td colSpan={7} className={styles.emptyState} style={{ padding: "40px", textAlign: "center", color: "var(--color-text-tertiary)" }}>
                   No rows match the current filters.
                 </td>
               </tr>
@@ -173,34 +173,34 @@ export default function VideoExplorer() {
                   <tr
                     key={`${r.channel}-${r.user}`}
                     style={{
-                      borderBottom: i === filtered.length - 1 ? "none" : "1px solid #222",
+                      borderBottom: i === filtered.length - 1 ? "none" : "1px solid var(--color-border)",
                       background: "transparent",
                     }}
                   >
-                    <td style={{ padding: "16px 20px", color: "#ddd", fontWeight: 600 }}>
+                    <td style={{ padding: "16px 20px", color: "var(--color-text-primary)", fontWeight: 600 }}>
                       {r.channel}
                     </td>
-                    <td style={{ padding: "16px 20px", color: (r.user || "").includes("Unknown") || (r.user || "").includes("Auto") ? "#ef4444" : "#9ca3af", fontWeight: (r.user || "").includes("Unknown") || (r.user || "").includes("Auto") ? 600 : 400 }}>
+                    <td style={{ padding: "16px 20px", color: (r.user || "").includes("Unknown") || (r.user || "").includes("Auto") ? "var(--color-accent-red)" : "var(--color-text-secondary)", fontWeight: (r.user || "").includes("Unknown") || (r.user || "").includes("Auto") ? 600 : 400 }}>
                       {r.user}
                     </td>
-                    <td style={{ padding: "16px 20px", color: "#6b7280" }}>
+                    <td style={{ padding: "16px 20px", color: "var(--color-text-secondary)" }}>
                       {fmt(r.uploaded || 0)}
                     </td>
-                    <td style={{ padding: "16px 20px", color: "#6b7280" }}>
+                    <td style={{ padding: "16px 20px", color: "var(--color-text-secondary)" }}>
                       {fmt(r.created || 0)}
                     </td>
                     <td style={{ padding: "16px 20px" }}>
-                      <span style={{ background: "rgba(139, 92, 246, 0.15)", color: "#a78bfa", padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+                      <span style={{ background: "rgba(139, 92, 246, 0.15)", color: "var(--color-accent-purple)", padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
                         {rateFormatted}
                       </span>
                     </td>
                     <td style={{ padding: "16px 20px" }}>
                       {r.published > 0 ? (
-                        <span style={{ background: "rgba(52, 211, 153, 0.15)", color: "#34d399", padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+                        <span style={{ background: "rgba(52, 211, 153, 0.15)", color: "var(--color-accent-green)", padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
                           {fmt(r.published)}
                         </span>
                       ) : (
-                        <span style={{ background: "rgba(255, 255, 255, 0.05)", color: "#6b7280", padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+                        <span style={{ background: "var(--glass-bg-hover)", color: "var(--color-text-tertiary)", padding: "4px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
                           0
                         </span>
                       )}
@@ -218,7 +218,7 @@ export default function VideoExplorer() {
           style={{
             padding: "16px 20px",
             fontSize: 11,
-            color: "#666",
+            color: "var(--color-text-tertiary)",
             fontFamily: "var(--font-mono)",
             display: "flex",
             justifyContent: "space-between",
@@ -227,7 +227,7 @@ export default function VideoExplorer() {
           <span>
             Showing {filtered.length} of {(channelUsers || []).length} rows (Channel × User breakdown)
           </span>
-          <span style={{ color: "#888", cursor: "pointer" }}>Export CSV ↓</span>
+          <span style={{ color: "var(--color-text-tertiary)", cursor: "pointer" }}>Export CSV ↓</span>
         </div>
       </div>
     </div>
